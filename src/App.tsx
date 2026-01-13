@@ -1,5 +1,5 @@
 import { RouterProvider } from "@tanstack/react-router";
-import { useAuth } from "@/hooks/useAuth.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { router } from "@/router.tsx";
 
 export function App() {
