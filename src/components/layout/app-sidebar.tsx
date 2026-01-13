@@ -13,8 +13,8 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { navigation } from "@/lib/navigation";
+} from "@/components/ui/sidebar.tsx";
+import { navigation } from "@/lib/navigation.ts";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

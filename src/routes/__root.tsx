@@ -2,8 +2,8 @@ import * as React from "react";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import type { User } from "@/lib/types.ts";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
-import { AppSidebar } from "@/components/app-sidebar.tsx";
-import { AppHeader } from "@/components/app-header.tsx";
+import { AppSidebar } from "@/components/layout/app-sidebar.tsx";
+import { AppHeader } from "@/components/layout/app-header.tsx";
 
 export interface RouterContext {
   auth: {

@@ -1,7 +1,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import { Link } from "@tanstack/react-router";
-import { navigation } from "@/lib/navigation";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { navigation } from "@/lib/navigation.ts";
+import { useIsMobile } from "@/hooks/use-mobile.ts";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,7 +10,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+} from "@/components/ui/navigation-menu.tsx";
 
 export function AppHeader() {
   const isMobile = useIsMobile();
