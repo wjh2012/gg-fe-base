@@ -1,8 +1,9 @@
 import * as React from "react";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import type { User } from "@/lib/types.ts";
-import { SidebarProvider } from "@/components/ui/sidebar.tsx";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
 import { AppSidebar } from "@/components/app-sidebar.tsx";
+import { AppHeader } from "@/components/app-header.tsx";
 
 export interface RouterContext {
   auth: {
@@ -20,9 +21,12 @@ function RootComponent() {
     <React.Fragment>
       <SidebarProvider>
         <AppSidebar />
-        <main>
-          <Outlet />
-        </main>
+        <SidebarInset>
+          <AppHeader />
+          <div className="flex-1 p-6">
+            <Outlet />
+          </div>
+        </SidebarInset>
       </SidebarProvider>
     </React.Fragment>
   );
