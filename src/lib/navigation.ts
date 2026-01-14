@@ -12,22 +12,12 @@ export interface NavGroup {
 
 export const navigation: NavGroup[] = [
   {
-    title: "대시보드",
+    title: "Dashboard",
     url: "/dashboard",
   },
   {
-    title: "Getting Started",
-    url: "#",
-    items: [
-      {
-        title: "Installation",
-        url: "#",
-      },
-      {
-        title: "Project Structure",
-        url: "#",
-      },
-    ],
+    title: "Profile",
+    url: "/profile",
   },
   {
     title: "Building Your Application",

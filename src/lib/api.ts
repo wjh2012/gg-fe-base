@@ -1,16 +1,23 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { getToken, removeToken, setToken } from "../utils/token";
-import type { BaseResponse, TokenResponse } from "./types";
+import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/auth";
 
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // refreshToken 쿠키 전송
+  withCredentials: true,
 });
 
-// 토큰 갱신 상태 관리
+api.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 401 자동 갱신 로직
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
@@ -23,38 +30,10 @@ const onTokenRefreshed = (token: string) => {
   refreshSubscribers = [];
 };
 
-// 토큰 갱신 함수
-async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const response = await axios.post<BaseResponse<TokenResponse>>(
-      `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/auth/refresh`,
-      {},
-      { withCredentials: true },
-    );
-    if (response.data.success && response.data.data) {
-      const newToken = response.data.data.accessToken;
-      setToken(newToken);
-      return newToken;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+const onRefreshFailed = () => {
+  refreshSubscribers = [];
+};
 
-// 요청 인터셉터 - 토큰 추가
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
-
-// 응답 인터셉터 - 401 에러 시 토큰 갱신 시도
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -62,16 +41,17 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // 401 에러이고 재시도하지 않은 요청인 경우
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // refresh 요청 자체가 실패한 경우 로그인으로
-      if (originalRequest.url?.includes("/auth/refresh")) {
-        removeToken();
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
+    // refresh 요청 자체가 실패하면 로그아웃 처리
+    if (originalRequest.url === "/auth/refresh") {
+      clearAccessToken();
+      return Promise.reject(error);
+    }
 
-      // 이미 갱신 중이면 대기
+    // 401이고 아직 재시도 안 한 요청이면
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // 이미 refresh 진행 중이면 대기
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((token) => {
@@ -81,23 +61,26 @@ api.interceptors.response.use(
         });
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
-      const newToken = await refreshAccessToken();
-      isRefreshing = false;
-
-      if (newToken) {
-        onTokenRefreshed(newToken);
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      try {
+        const { data } = await api.post("/auth/refresh");
+        setAccessToken(data.accessToken);
+        onTokenRefreshed(data.accessToken);
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
+      } catch (refreshError) {
+        onRefreshFailed();
+        clearAccessToken();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
-
-      // 갱신 실패 시 로그인으로
-      removeToken();
-      window.location.href = "/login";
     }
 
     return Promise.reject(error);
   },
 );
+
+export default api;

@@ -27,7 +27,6 @@ export interface LoginRequest {
 export interface RegisterRequest {
   username: string;
   password: string;
-  name: string;
 }
 
 export interface TokenResponse {
@@ -38,11 +37,11 @@ export interface TokenResponse {
 
 export interface RegisterResponse {
   id: string;
-  name: string;
+  username: string;
 }
 
 // 사용자 타입
 export interface User {
   id: string;
-  name: string;
+  username: string;
 }

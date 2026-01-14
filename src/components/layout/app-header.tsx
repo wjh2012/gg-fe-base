@@ -11,13 +11,19 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { useLogout } from "@/hooks/auth-mutation.ts";
 
 export function AppHeader() {
   const isMobile = useIsMobile();
+  const { isAuthenticated, isInitializing } = useAuth();
+  const { mutate: logout } = useLogout();
+
   return (
     <header className="border-b bg-background sticky top-0 z-30">
       <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-8">
+        <div className="flex w-full items-center gap-8">
           <SidebarTrigger />
           <Link to="/" className="text-xl font-bold text-indigo-600">
             GG APP
@@ -62,6 +68,19 @@ export function AppHeader() {
               ))}
             </NavigationMenuList>
           </NavigationMenu>
+          <div className="ml-auto flex items-center gap-2">
+            {isInitializing ? null : isAuthenticated ? (
+              <Button variant="ghost" size="sm" onClick={() => logout()}>
+                로그아웃
+              </Button>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  로그인
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </header>

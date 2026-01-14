@@ -1,16 +1,11 @@
 import { RouterProvider } from "@tanstack/react-router";
-import { useAuth } from "@/hooks/use-auth.ts";
 import { router } from "@/router.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 export function App() {
-  const { isAuthenticated, user } = useAuth();
+  const auth = useAuth();
 
-  return (
-    <RouterProvider
-      router={router}
-      context={{
-        auth: { isAuthenticated, user },
-      }}
-    />
-  );
+  if (auth.isInitializing) return null;
+
+  return <RouterProvider router={router} context={{ auth }} />;
 }

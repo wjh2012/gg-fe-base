@@ -1,10 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LoginForm } from "@/components/auth/login-form.tsx";
+import { hasToken } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: ({ context }) => {
-    if (context.auth.isAuthenticated) {
-      throw redirect({ to: "/dashboard" });
+  beforeLoad: () => {
+    if (hasToken()) {
+      throw redirect({ to: "/" });
     }
   },
   component: LoginPage,
