@@ -17,7 +17,7 @@ import { useLogout } from "@/hooks/auth-mutation.ts";
 
 export function AppHeader() {
   const isMobile = useIsMobile();
-  const { isAuthenticated, isInitializing } = useAuth();
+  const { isAuthenticated, isLoading: isInitializing } = useAuth();
   const { mutate: logout } = useLogout();
 
   return (

@@ -1,20 +1,13 @@
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { clearAccessToken, setAccessToken } from "../lib/auth";
 import api from "../lib/api";
 import type { User } from "@/lib/types.ts";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   user: User | null;
-  isInitializing: boolean;
   login: (credentials: { username: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -22,34 +15,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
   const queryClient = useQueryClient();
 
-  // 앱 부팅 시 토큰 복구 (Silent Refresh)
-  useEffect(() => {
-    const initAuth = async () => {
+  const { data: user = null, isLoading } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
       try {
         const { data } = await api.post("/auth/refresh");
         setAccessToken(data.accessToken);
-        setUser(data.user);
+        return data.user as User;
       } catch {
         clearAccessToken();
-        setUser(null);
-      } finally {
-        setIsInitializing(false);
+        return null;
       }
-    };
-    initAuth();
-  }, []);
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
 
   const login = useCallback(
     async (credentials: { username: string; password: string }) => {
       const { data } = await api.post("/auth/login", credentials);
       setAccessToken(data.accessToken);
-      setUser(data.user);
+      queryClient.setQueryData(["auth", "me"], data.user);
     },
-    [],
+    [queryClient],
   );
 
   const logout = useCallback(async () => {
@@ -57,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await api.post("/auth/logout");
     } finally {
       clearAccessToken();
-      setUser(null);
+      queryClient.setQueryData(["auth", "me"], null);
       queryClient.clear();
     }
   }, [queryClient]);
@@ -65,9 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user,
+        isAuthenticated: user !== null,
+        isLoading,
         user,
-        isInitializing,
         login,
         logout,
       }}
@@ -76,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+export type { AuthContextType };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

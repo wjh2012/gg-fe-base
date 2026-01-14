@@ -4,18 +4,15 @@ import {
   Link,
   Outlet,
 } from "@tanstack/react-router";
-import type { User } from "@/lib/types.ts";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
 import { AppSidebar } from "@/components/layout/app-sidebar.tsx";
 import { AppHeader } from "@/components/layout/app-header.tsx";
 import { AlertCircle, FileQuestion, Home, RefreshCw } from "lucide-react";
 import { ModeToggle } from "@/components/theme/mode-toggle.tsx";
+import { useAuth, type AuthContextType } from "@/contexts/AuthContext.tsx";
 
 export interface RouterContext {
-  auth: {
-    isAuthenticated: boolean;
-    user: User | null;
-  };
+  auth: Promise<AuthContextType>;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -26,6 +23,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+  const auth = useAuth();
+
+  if (auth.isLoading) {
+    return <LoadingComponent />;
+  }
+
   return (
     <React.Fragment>
       <SidebarProvider defaultOpen={false}>

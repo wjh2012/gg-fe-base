@@ -28,6 +28,7 @@ export function LoginForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPending) return;
     login({ username, password });
   };
 

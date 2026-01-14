@@ -1,11 +1,18 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LoginForm } from "@/components/auth/login-form.tsx";
-import { hasToken } from "@/lib/auth";
+
+type LoginSearch = {
+  redirect?: string;
+};
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    if (hasToken()) {
-      throw redirect({ to: "/" });
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  beforeLoad: async ({ context, search }) => {
+    const auth = await context.auth;
+    if (auth.isAuthenticated) {
+      throw redirect({ to: search.redirect || "/" });
     }
   },
   component: LoginPage,

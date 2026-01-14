@@ -72,7 +72,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         onRefreshFailed();
         clearAccessToken();
-        window.location.href = "/login";
+        const currentPath = window.location.pathname;
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
