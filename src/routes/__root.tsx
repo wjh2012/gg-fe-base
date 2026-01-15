@@ -8,7 +8,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
 import { AppSidebar } from "@/components/layout/app-sidebar.tsx";
 import { AppHeader } from "@/components/layout/app-header.tsx";
 import { AlertCircle, FileQuestion, Home, RefreshCw } from "lucide-react";
-import { ModeToggle } from "@/components/theme/mode-toggle.tsx";
+import { ModeToggle } from "@/feature/theme/mode-toggle.tsx";
 import { useAuth, type AuthContextType } from "@/contexts/AuthContext.tsx";
 
 export interface RouterContext {

@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { LoginForm } from "@/components/auth/login-form.tsx";
+import { LoginForm } from "@/feature/auth/login-form.tsx";
 
 type LoginSearch = {
   redirect?: string;

@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useCallback, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { clearAccessToken, setAccessToken } from "../lib/auth";
-import api from "../lib/api";
+import { clearAccessToken, setAccessToken } from "../lib/auth/token.ts";
+import apiClient from "../lib/api/api-client.ts";
 import type { User } from "@/lib/types.ts";
 
 interface AuthContextType {
@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["auth", "me"],
     queryFn: async () => {
       try {
-        const { data } = await api.post("/auth/refresh");
+        const { data } = await apiClient.post("/auth/refresh");
         setAccessToken(data.accessToken);
         return data.user as User;
       } catch {
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (credentials: { username: string; password: string }) => {
-      const { data } = await api.post("/auth/login", credentials);
+      const { data } = await apiClient.post("/auth/login", credentials);
       setAccessToken(data.accessToken);
       queryClient.setQueryData(["auth", "me"], data.user);
     },
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await api.post("/auth/logout");
+      await apiClient.post("/auth/logout");
     } finally {
       clearAccessToken();
       queryClient.setQueryData(["auth", "me"], null);

@@ -1,7 +1,11 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/auth";
+import {
+  clearAccessToken,
+  getAccessToken,
+  setAccessToken,
+} from "@/lib/auth/token.ts";
 
-const api = axios.create({
+const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
@@ -9,7 +13,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -34,7 +38,7 @@ const onRefreshFailed = () => {
   refreshSubscribers = [];
 };
 
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
@@ -56,7 +60,7 @@ api.interceptors.response.use(
         return new Promise((resolve) => {
           subscribeTokenRefresh((token) => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(api(originalRequest));
+            resolve(apiClient(originalRequest));
           });
         });
       }
@@ -64,11 +68,11 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await api.post("/auth/refresh");
+        const { data } = await apiClient.post("/auth/refresh");
         setAccessToken(data.accessToken);
         onTokenRefreshed(data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-        return api(originalRequest);
+        return apiClient(originalRequest);
       } catch (refreshError) {
         onRefreshFailed();
         clearAccessToken();
@@ -84,4 +88,4 @@ api.interceptors.response.use(
   },
 );
 
-export default api;
+export default apiClient;
