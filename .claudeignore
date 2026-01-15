@@ -23,4 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 
-.tanstack/*
+*.log
+*.tmp
+build/
+
+package-lock.json
+yarn.lock
+
+.git/
+.tanstack/
+
+mock-api/
